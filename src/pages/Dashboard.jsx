@@ -18,7 +18,7 @@ import { btnPrimary, btnSecondary } from "../utils/ui.js";
 export default function Dashboard() {
   const { subjects, loading, error, save, remove, importRows } = useSubjects();
   const { term, setTerm, addTerm, terms } = useTerm(subjects);
-  const { profile, reload: reloadProfile } = useProfile();
+  const { profile, mergeFromScan } = useProfile();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
@@ -40,10 +40,10 @@ export default function Dashboard() {
     setModalOpen(true);
   }
 
-  async function handleImport(rows) {
-    await importRows(rows, term);
-    // The scan may have auto-filled blank profile fields — refresh the card
-    reloadProfile();
+  function handleImport(rows, student) {
+    importRows(rows, term);
+    // The scan may fill blank profile fields (name, ID, course…).
+    mergeFromScan(student);
   }
 
   return (

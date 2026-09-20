@@ -1,85 +1,66 @@
-import { useState, useEffect, useCallback } from "react";
-import { apiFetch } from "../utils/api.js";
-import { DEFAULT_TERM } from "../utils/terms.js";
+import { useState, useCallback } from "react";
+import { DEFAULT_TERM, readStore, writeStore } from "../utils/terms.js";
+
+// Subjects live entirely in this browser (localStorage) — no login, no server.
+const STORE_KEY = "jp2sched.subjects";
 
 // Rows saved before semesters existed fall back to the current term.
 const withTerm = (s) => ({ ...s, term: s.term || DEFAULT_TERM });
 
-export default function useSubjects() {
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const newId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-  useEffect(() => {
-    let cancelled = false;
-    apiFetch("/api/subjects.php")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled) setSubjects(Array.isArray(data) ? data.map(withTerm) : []);
-      })
-      .catch(() => {
-        if (!cancelled) setError("Couldn't load your schedule. Is the backend running?");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+export default function useSubjects() {
+  const [subjects, setSubjects] = useState(() =>
+    (readStore(STORE_KEY, []) || []).map(withTerm)
+  );
+  // Kept so pages that show a spinner / error banner don't need to change.
+  const loading = false;
+  const error = null;
+
+  // Single place that writes every change through to localStorage.
+  const persist = useCallback((updater) => {
+    setSubjects((prev) => {
+      const next = updater(prev);
+      writeStore(STORE_KEY, next);
+      return next;
+    });
   }, []);
 
   // editing = the subject being edited (keeps its own term), otherwise creates in `term`
-  const save = useCallback(async (form, editing, term) => {
-    if (editing) {
-      const body = { ...form, term: editing.term };
-      const res = await apiFetch(`/api/subject_detail.php?id=${editing.id}`, {
-        method: "PUT",
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) return;
-      setSubjects((subs) => subs.map((s) => (s.id === editing.id ? { ...body, id: editing.id } : s)));
-    } else {
-      const body = { ...form, term };
-      const res = await apiFetch("/api/subjects.php", {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) return;
-      setSubjects((subs) => [...subs, { ...body, id: data.id }]);
-    }
-  }, []);
+  const save = useCallback(
+    (form, editing, term) => {
+      if (editing) {
+        const updated = { ...form, term: editing.term, id: editing.id };
+        persist((subs) => subs.map((s) => (s.id === editing.id ? updated : s)));
+      } else {
+        const created = { ...form, term, id: newId() };
+        persist((subs) => [...subs, created]);
+      }
+    },
+    [persist]
+  );
 
-  const remove = useCallback(async (id) => {
-    const res = await apiFetch(`/api/subject_detail.php?id=${id}`, { method: "DELETE" });
-    if (!res.ok) return;
-    setSubjects((subs) => subs.filter((s) => s.id !== id));
-  }, []);
+  const remove = useCallback(
+    (id) => persist((subs) => subs.filter((s) => s.id !== id)),
+    [persist]
+  );
 
-  const removeMany = useCallback(async (ids) => {
-    const done = [];
-    for (const id of ids) {
-      const res = await apiFetch(`/api/subject_detail.php?id=${id}`, { method: "DELETE" });
-      if (res.ok) done.push(id);
-    }
-    setSubjects((subs) => subs.filter((s) => !done.includes(s.id)));
-  }, []);
+  const removeMany = useCallback(
+    (ids) => persist((subs) => subs.filter((s) => !ids.includes(s.id))),
+    [persist]
+  );
 
-  // ScanERCModal already saved `rows` through /api/subjects_bulk.php.
-  // Stopgap: tag them with the selected semester (until subjects_bulk.php saves `term` itself).
-  const importRows = useCallback(async (rows, term) => {
-    setSubjects((subs) => [...subs, ...rows.map((r) => ({ ...r, term }))]);
-    await Promise.all(
-      rows
-        .filter((r) => r.id && r.term !== term)
-        .map((r) =>
-          apiFetch(`/api/subject_detail.php?id=${r.id}`, {
-            method: "PUT",
-            body: JSON.stringify({ ...r, term }),
-          }).catch(() => {})
-        )
-    );
-  }, []);
+  // Rows from an ERC scan: tag with the selected semester and give real ids.
+  const importRows = useCallback(
+    (rows, term) => {
+      const tagged = rows.map((r) => ({ ...r, term, id: newId() }));
+      persist((subs) => [...subs, ...tagged]);
+    },
+    [persist]
+  );
 
   return { subjects, loading, error, save, remove, removeMany, importRows };
 }

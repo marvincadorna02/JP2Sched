@@ -1,59 +1,66 @@
-# JP2Sched Backend Setup
+# JP2Sched
 
-## 1. Database
-Import `jp2sched-database.sql` (from the earlier message) into MySQL — via
-phpMyAdmin or:
-```
-mysql -u root -p < jp2sched-database.sql
-```
+A no-login weekly schedule organizer for students. Add subjects by hand, or
+snap a photo of your ERC and let AI lay out the term for you. Everything is
+saved **in your browser** — no account, no database, no server to run.
 
-## 2. Place this folder
-Drop `jp2sched-backend/` into your XAMPP `htdocs/` folder so it's reachable at
-`http://localhost/jp2sched-backend/`.
+## How it works
 
-## 3. Configure
-- `config/database.php` — check the `$user` / `$pass` match your MySQL setup
-  (XAMPP default is usually `root` with an empty password).
-- Copy `.env.example` to `.env` and paste in a real key from
-  https://console.anthropic.com/settings/keys
+- **Frontend:** React + Vite + Tailwind, deployed as a static site.
+- **Data:** your subjects, semesters, and profile live in the browser's
+  `localStorage` (per device/browser). Move them between devices with
+  **Settings → Backup & restore** (Export/Import JSON).
+- **ERC Scan (AI):** the only server-side piece — a single Vercel serverless
+  function at [`api/erc_scan.js`](api/erc_scan.js). It forwards the photo to
+  Google Gemini and returns the parsed subjects. Your Gemini API key stays on
+  the server (a Vercel env var); it is never shipped to the browser.
 
-## 4. Test the endpoints directly (before wiring the frontend)
+There is no login, no MySQL, and no PHP.
 
-**Add a subject:**
-```
-curl -X POST http://localhost/jp2sched-backend/api/subjects.php \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Data Structures","code":"CS 211","room":"IT-204","day":"Mon","start":"08:00","end":"09:30"}'
+## Local development
+
+```bash
+npm install
+npm run dev          # http://localhost:5173 — full app except ERC scan
 ```
 
-**List subjects:**
-```
-curl http://localhost/jp2sched-backend/api/subjects.php
+The app opens straight to the dashboard. Add/edit subjects, semesters, and
+your profile — all persist in `localStorage`.
+
+To test the **ERC scan** locally you need the serverless function running, which
+plain `npm run dev` does not do. Use the Vercel CLI:
+
+```bash
+npm i -g vercel
+cp .env.example .env        # then paste your real GEMINI_API_KEY into .env
+vercel dev                  # serves the app AND /api/erc_scan together
 ```
 
-**Scan an ERC:**
-```
-curl -X POST http://localhost/jp2sched-backend/api/erc_scan.php \
-  -F "erc=@/path/to/your/erc-photo.jpg"
-```
-This should return `{"scan_id": ..., "subjects": [...]}`. Check the `erc_scans`
-table afterward — `raw_ai_response` has the full model output if anything looks off.
+Get a free Gemini key at https://aistudio.google.com/apikey.
 
-**Confirm the scan into the real schedule:**
-```
-curl -X POST http://localhost/jp2sched-backend/api/subjects_bulk.php \
-  -H "Content-Type: application/json" \
-  -d '{"subjects":[{"name":"Data Structures","code":"CS 211","room":"IT-204","day":"Mon","start":"08:00","end":"09:30"}]}'
-```
+## Deploy to Vercel (free)
 
-## 5. Point the frontend at it
-In `jp2sched-frontend/vite.config.js`, the `/api` proxy already targets
-`http://localhost/jp2sched-backend`. In each component, swap the mock data /
-`setTimeout` calls for real `fetch("/api/...")` calls to these endpoints.
+1. Push this repo to GitHub/GitLab.
+2. In Vercel, **Add New → Project** and import the repo. Vercel auto-detects
+   Vite (build `vite build`, output `dist`) and the `api/` function.
+3. **Project → Settings → Environment Variables**, add:
+   - `GEMINI_API_KEY` = your Gemini key
+   - *(optional)* `GEMINI_MODEL` = a model override if the default is retired
+     (e.g. `gemini-2.0-flash`)
+4. **Deploy.** Adding subjects works entirely client-side; the ERC scan calls
+   the serverless function.
 
-## Notes
-- Auth is stubbed (`config/current_user.php` always returns a demo user) so
-  you can test subjects + ERC scanning immediately. Build real login against
-  the `sessions` table when you're ready, then swap that file's contents.
-- `subjects.php` GET/POST have no `?id=`; edit/delete a specific subject
-  through `subject_detail.php?id=5`.
+`.env` is gitignored, so your key is never pushed — you set it in Vercel.
+
+## Project layout
+
+```
+api/erc_scan.js     Vercel serverless function (Gemini vision → subjects JSON)
+public/             static assets served at the site root (favicon)
+src/
+  pages/            Landing, Dashboard, Subjects, Schedule, Settings
+  components/       schedule grid, modals, cards, sidebar…
+  hooks/            useSubjects, useProfile, useTerm (localStorage-backed)
+  utils/            schedule/term helpers, readStore/writeStore
+vercel.json         SPA rewrites (client routing) that exclude /api
+```

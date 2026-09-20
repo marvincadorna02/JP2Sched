@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutGrid, BookOpen, CalendarDays, Settings, LogOut, X } from "lucide-react";
+import { LayoutGrid, BookOpen, CalendarDays, Settings, X } from "lucide-react";
 import logo from "../assets/logo.png";
-import ConfirmModal from "./ConfirmModal.jsx";
 
 const NAV = [
   { label: "Overview", icon: LayoutGrid, to: "/dashboard" },
@@ -12,13 +10,6 @@ const NAV = [
 ];
 
 export default function Sidebar({ open = false, onClose = () => {} }) {
-  const [signOutOpen, setSignOutOpen] = useState(false);
-
-  function confirmSignOut() {
-    setSignOutOpen(false);
-    window.location.href = "/login"; // ilisi diri kung naa kay actual signOut() function/auth call
-  }
-
   return (
     <>
       {open && (
@@ -66,29 +57,12 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-royal/20">
-                  <button
-          onClick={() => {
-            onClose();
-            setSignOutOpen(true);
-          }}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-mist/70 hover:bg-royal/40 hover:text-paper transition-colors"
-          >
-            <LogOut size={18} strokeWidth={2} />
-            Sign out
-          </button>
+        <div className="px-6 py-4 border-t border-royal/20">
+          <p className="text-xs text-mist/50 leading-relaxed">
+            Your schedule is saved on this device. Back it up from Settings.
+          </p>
         </div>
       </aside>
-
-      <ConfirmModal
-        open={signOutOpen}
-        title="Sign out?"
-        message="You'll need to log in again to access your schedule."
-        confirmLabel="Sign out"
-        cancelLabel="Stay signed in"
-        onConfirm={confirmSignOut}
-        onCancel={() => setSignOutOpen(false)}
-      />
     </>
   );
 }

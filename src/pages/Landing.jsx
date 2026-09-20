@@ -17,7 +17,7 @@ const FEATURES = [
   {
     icon: BellRing,
     title: "Never miss a slot",
-    body: "See what's next at a glance, from the dashboard, the moment you log in.",
+    body: "See what's next at a glance, from the dashboard, the moment you open it.",
   },
   {
     icon: ScanLine,
@@ -54,16 +54,10 @@ export default function Landing() {
           </nav>
           <div className="flex items-center gap-3">
             <Link
-              to="/login"
-              className="hidden sm:inline text-sm font-semibold text-mist/80 hover:text-paper transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              to="/register"
+              to="/dashboard"
               className="text-sm font-semibold px-4 py-2 rounded-lg bg-gold text-navy hover:bg-gold/90 transition-colors"
             >
-              Get started
+              Open app
             </Link>
           </div>
         </div>
@@ -140,7 +134,7 @@ export default function Landing() {
                 innerClassName="w-full sm:w-auto"
               >
                 <Link
-                  to="/register"
+                  to="/dashboard"
                   className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gold text-navy font-semibold px-7 py-3.5 rounded-lg hover:bg-gold/90 transition-colors"
                 >
                   Get started
@@ -158,10 +152,7 @@ export default function Landing() {
 
           <AnimatedContent distance={20} delay={1}>
             <p className="text-mist/50 text-sm mt-6">
-              Already have an account?{" "}
-              <Link to="/login" className="text-gold font-medium hover:underline">
-                Sign in
-              </Link>
+              No account needed — your schedule saves right on this device.
             </p>
           </AnimatedContent>
         </div>
@@ -275,7 +266,7 @@ export default function Landing() {
               <p className="text-mist/60 text-sm mt-1">Free to use — set up your first schedule in minutes.</p>
             </div>
             <Link
-              to="/register"
+              to="/dashboard"
               className="bg-gold text-navy font-semibold px-6 py-3 rounded-lg hover:bg-gold/90 transition-colors text-sm shrink-0"
             >
               Get started
@@ -298,7 +289,7 @@ export default function Landing() {
           <div className="flex items-center gap-5 text-xs text-mist/50">
             <a href="#features" className="hover:text-mist transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-mist transition-colors">How it works</a>
-            <Link to="/login" className="hover:text-mist transition-colors">Sign in</Link>
+            <Link to="/dashboard" className="hover:text-mist transition-colors">Open app</Link>
           </div>
         </div>
       </footer>

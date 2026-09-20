@@ -4,15 +4,24 @@ import { DAYS, toDecimal, toLabel } from "../utils/schedule.js";
 const START_HOUR = 7;
 const DEFAULT_END_HOUR = 19;
 
-const COLOR_CYCLE = ["bg-royal text-paper", "bg-gold text-navy", "bg-navy text-paper"];
-function colorFor(id) {
-  return COLOR_CYCLE[id % COLOR_CYCLE.length];
-}
+const COLOR_CYCLE = [
+  "bg-royal text-paper",
+  "bg-gold text-navy",
+  "bg-navy text-paper",
+  "bg-emerald-600 text-paper",
+  "bg-rose-500 text-paper",
+  "bg-violet-600 text-paper",
+];
 
 const TIME_CELL = "sticky left-0 z-20 bg-paper border-b border-mist text-right pr-2 text-xs font-medium text-navy/70 pt-1";
 
 export default function ScheduleGrid({ subjects, onBlockClick }) {
   const rowHeight = 72;
+
+  const colorByName = {};
+[...new Set(subjects.map((s) => s.name))].sort().forEach((name, i) => {
+  colorByName[name] = COLOR_CYCLE[i % COLOR_CYCLE.length];
+});
   // Only clickable when a handler is passed (Overview); plain block otherwise (Schedule)
   const Block = onBlockClick ? "button" : "div";
 
@@ -65,7 +74,7 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
                           onClick={onBlockClick ? () => onBlockClick(s) : undefined}
                           className={`absolute top-1 rounded-md px-2 py-1.5 text-xs leading-tight text-left z-10 overflow-hidden ${
                             onBlockClick ? "hover:brightness-95 transition-all" : ""
-                          } ${colorFor(s.id)}`}
+                          } ${colorByName[s.name]}`}
                           style={{
                             height: durationHrs * rowHeight - 8,
                             left: `calc(${i * widthPct}% + 2px)`,

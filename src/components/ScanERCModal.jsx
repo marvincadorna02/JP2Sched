@@ -1,7 +1,32 @@
 import { useState, useRef } from "react";
 import { X, Camera, Upload, Loader2, Pencil, Trash2, Check, AlertTriangle } from "lucide-react";
 import { DAYS, findConflicts, toLabel } from "../utils/schedule.js";
-import { apiFetch } from "../utils/api.js";
+
+// Shrink the photo in the browser before sending it, so the request stays well
+// under Vercel's body-size limit and the scan comes back faster.
+async function fileToDownscaledBase64(file, maxDim = 1600, quality = 0.85) {
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale));
+  const h = Math.max(1, Math.round(img.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+  const out = canvas.toDataURL("image/jpeg", quality);
+  return { base64: out.split(",")[1], mimeType: "image/jpeg" };
+}
 
 export default function ScanERCModal({ open, onClose, onImport, subjects = [] }) {
   const [step, setStep] = useState("upload"); // upload -> extracting -> review
@@ -10,7 +35,6 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
   const [student, setStudent] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState(null);
-  const [saving, setSaving] = useState(false);
   const fileRef = useRef(null);
 
   if (!open) return null;
@@ -22,7 +46,6 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
     setStudent(null);
     setEditingId(null);
     setError(null);
-    setSaving(false);
   }
 
   function handleClose() {
@@ -37,10 +60,13 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
     setError(null);
 
     try {
-      const form = new FormData();
-      form.append("erc", file);
-      const res = await apiFetch("/api/erc_scan.php", { method: "POST", body: form });
-      const data = await res.json();
+      const { base64, mimeType } = await fileToDownscaledBase64(file);
+      const res = await fetch("/api/erc_scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, mimeType }),
+      });
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data.error || "Scan failed. Please try again.");
@@ -63,28 +89,11 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
     setRows((r) => r.filter((row) => row.id !== id));
   }
 
-  async function handleConfirm() {
-    setSaving(true);
-    setError(null);
-    try {
-      const res = await apiFetch("/api/subjects_bulk.php", {
-        method: "POST",
-        body: JSON.stringify({ subjects: rows }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Saving failed. Please try again.");
-      }
-
-      // Attach the real DB ids the backend generated, in insertion order.
-      const saved = rows.map((row, i) => ({ ...row, id: data.ids?.[i] ?? row.id }));
-      onImport?.(saved, student);
-      handleClose();
-    } catch (err) {
-      setError(err.message || "Something went wrong while saving.");
-      setSaving(false);
-    }
+  // Everything is client-side now — just hand the reviewed rows to the page,
+  // which tags them with the term and saves to localStorage.
+  function handleConfirm() {
+    onImport?.(rows, student);
+    handleClose();
   }
 
   return (
@@ -280,18 +289,16 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
             <div className="flex gap-3">
               <button
                 onClick={() => setStep("upload")}
-                disabled={saving}
-                className="flex-1 rounded-lg border border-mist py-2.5 text-sm font-semibold text-navy/70 hover:bg-mist/40 disabled:opacity-40"
+                className="flex-1 rounded-lg border border-mist py-2.5 text-sm font-semibold text-navy/70 hover:bg-mist/40"
               >
                 Rescan
               </button>
               <button
                 onClick={handleConfirm}
-                disabled={rows.length === 0 || saving}
+                disabled={rows.length === 0}
                 className="flex-1 rounded-lg bg-gold py-2.5 text-sm font-semibold text-navy hover:bg-gold/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {saving && <Loader2 size={15} className="animate-spin" />}
-                {saving ? "Saving…" : `Save ${rows.length} subject${rows.length === 1 ? "" : "s"}`}
+                {`Save ${rows.length} subject${rows.length === 1 ? "" : "s"}`}
               </button>
             </div>
           </div>
