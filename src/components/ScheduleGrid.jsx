@@ -88,8 +88,8 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
                         >
                           <p className="text-sm font-bold leading-tight line-clamp-2">{s.name}</p>
                           <div className="mt-1 flex flex-wrap items-center gap-1 text-xs font-semibold">
-                            <span className="rounded bg-white/80 px-1.5 py-0.5">{s.room}</span>
-                            <span className="opacity-80">{toLabel(s.start)}–{toLabel(s.end)}</span>
+                            <span className="rounded bg-white px-1.5 py-0.5 text-slate-900 shadow-sm">{s.room}</span>
+                            <span className="opacity-100">{toLabel(s.start)}–{toLabel(s.end)}</span>
                           </div>
                         </Block>
                       );
