@@ -5,12 +5,12 @@ const START_HOUR = 7;
 const DEFAULT_END_HOUR = 19;
 
 const COLOR_CYCLE = [
-  { bg: "bg-gradient-to-br from-blue-600 to-indigo-700", bar: "border-blue-900", text: "text-white" },
-  { bg: "bg-gradient-to-br from-amber-400 to-orange-500", bar: "border-orange-700", text: "text-amber-950" },
-  { bg: "bg-gradient-to-br from-indigo-600 to-violet-700", bar: "border-indigo-900", text: "text-white" },
-  { bg: "bg-gradient-to-br from-emerald-500 to-teal-600", bar: "border-teal-800", text: "text-white" },
-  { bg: "bg-gradient-to-br from-rose-500 to-pink-600", bar: "border-rose-800", text: "text-white" },
-  { bg: "bg-gradient-to-br from-violet-500 to-purple-700", bar: "border-purple-900", text: "text-white" },
+  { bg: "bg-blue-50", bar: "border-blue-600", text: "text-blue-900" },
+  { bg: "bg-amber-50", bar: "border-amber-500", text: "text-amber-900" },
+  { bg: "bg-indigo-50", bar: "border-indigo-600", text: "text-indigo-900" },
+  { bg: "bg-emerald-50", bar: "border-emerald-600", text: "text-emerald-900" },
+  { bg: "bg-rose-50", bar: "border-rose-500", text: "text-rose-900" },
+  { bg: "bg-violet-50", bar: "border-violet-600", text: "text-violet-900" },
 ];
 
 const TIME_CELL =
@@ -66,7 +66,6 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
                     style={{ height: rowHeight }}
                   >
                     {slotSubjects.map((s, i) => {
-                      const c = colorByName[s.name];
                       const startDec = toDecimal(s.start);
                       const durationHrs = toDecimal(s.end) - startDec;
                       const offset = (startDec - h) * rowHeight;
@@ -74,24 +73,24 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
                       const widthPct = 100 / count;
                       return (
                         <Block
-                          key={s.id}
-                          onClick={onBlockClick ? () => onBlockClick(s) : undefined}
-                          className={`absolute rounded-lg border-l-4 pl-2.5 pr-2 py-1.5 text-left z-10 overflow-hidden shadow-sm ${
-                            onBlockClick ? "hover:shadow-md hover:-translate-y-px transition-all" : ""
-                          } ${c.bg} ${c.bar} ${c.text}`}
-                          style={{
-                            top: offset,
-                            height: durationHrs * rowHeight - 1,
-                            left: `calc(${i * widthPct}% + 2px)`,
-                            width: `calc(${widthPct}% - 4px)`,
-                          }}
-                        >
-                          <p className="text-sm font-bold leading-tight line-clamp-2">{s.name}</p>
-                          <div className="mt-1 flex flex-wrap items-center gap-1 text-xs font-semibold">
-                            <span className="rounded bg-white px-1.5 py-0.5 text-slate-900 shadow-sm">{s.room}</span>
-                            <span className="opacity-100">{toLabel(s.start)}–{toLabel(s.end)}</span>
-                          </div>
-                        </Block>
+                        key={s.id}
+                        onClick={onBlockClick ? () => onBlockClick(s) : undefined}
+                        className={`absolute rounded-lg border-l-4 pl-2.5 pr-2 py-1.5 text-left z-10 overflow-hidden shadow-sm ${
+                          onBlockClick ? "hover:shadow-md hover:-translate-y-px transition-all" : ""
+                        } ${c.bg} ${c.bar} ${c.text}`}
+                        style={{
+                          top: offset,
+                          height: durationHrs * rowHeight - 1,
+                          left: `calc(${i * widthPct}% + 2px)`,
+                          width: `calc(${widthPct}% - 4px)`,
+                        }}
+                      >
+                        <p className="text-sm font-bold leading-tight line-clamp-2">{s.name}</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1 text-xs font-semibold">
+                          <span className="rounded bg-white/80 px-1.5 py-0.5">{s.room}</span>
+                          <span className="opacity-80">{toLabel(s.start)}–{toLabel(s.end)}</span>
+                        </div>
+                      </Block>
                       );
                     })}
                   </div>
