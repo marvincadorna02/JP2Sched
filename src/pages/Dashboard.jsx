@@ -27,7 +27,7 @@ export default function Dashboard() {
   const termSubjects = useMemo(() => subjects.filter((s) => s.term === term), [subjects, term]);
 
   // Same subject on several days counts once
-  const subjectCount = new Set(termSubjects.map((s) => s.name.trim().toLowerCase())).size;
+  const subjectCount = new Set(termSubjects.map((s) => s.code || s.name.trim().toLowerCase())).size;
   const totalHours = termSubjects.reduce((sum, s) => sum + toDecimal(s.end) - toDecimal(s.start), 0);
 
   function openAdd() {
