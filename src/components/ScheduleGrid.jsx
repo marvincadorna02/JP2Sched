@@ -66,6 +66,7 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
                     style={{ height: rowHeight }}
                   >
                     {slotSubjects.map((s, i) => {
+                      const c = colorByName[s.name];
                       const startDec = toDecimal(s.start);
                       const durationHrs = toDecimal(s.end) - startDec;
                       const offset = (startDec - h) * rowHeight;
