@@ -8,12 +8,12 @@ const COLOR_CYCLE = [
   "bg-royal text-paper",
   "bg-gold text-navy",
   "bg-navy text-paper",
-  "bg-emerald-600 text-paper",
-  "bg-rose-500 text-paper",
-  "bg-violet-600 text-paper",
+  "bg-emerald-700 text-paper",
+  "bg-rose-600 text-paper",
+  "bg-violet-700 text-paper",
 ];
 
-const TIME_CELL = "sticky left-0 z-20 bg-paper border-b border-mist text-right pr-2 text-xs font-medium text-navy/70 pt-1";
+const TIME_CELL = "sticky left-0 z-20 bg-paper border-b border-mist text-right pr-2 text-xs sm:text-sm font-semibold text-navy pt-1";
 
 export default function ScheduleGrid({ subjects, onBlockClick }) {
   const rowHeight = 72;
@@ -36,8 +36,8 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
       {/* Scrolls sideways on small screens; time column stays pinned */}
       <div className="overflow-x-auto">
         <div
-          className="grid min-w-[720px]"
-          style={{ gridTemplateColumns: "60px repeat(6, minmax(100px, 1fr))" }}
+          className="grid min-w-[840px]"
+          style={{ gridTemplateColumns: "64px repeat(6, minmax(120px, 1fr))" }}
         >
           <div className="sticky left-0 z-20 bg-paper border-b border-mist" />
           {DAYS.map((d) => (
@@ -64,30 +64,33 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
                     className="border-b border-l border-mist relative"
                     style={{ height: rowHeight }}
                   >
-                    {slotSubjects.map((s, i) => {
-                      const durationHrs = toDecimal(s.end) - toDecimal(s.start);
-                      const count = slotSubjects.length;
-                      const widthPct = 100 / count;
-                      return (
-                        <Block
-                          key={s.id}
-                          onClick={onBlockClick ? () => onBlockClick(s) : undefined}
-                          className={`absolute top-1 rounded-md px-2 py-1.5 text-xs leading-tight text-left z-10 overflow-hidden ${
-                            onBlockClick ? "hover:brightness-95 transition-all" : ""
-                          } ${colorByName[s.name]}`}
-                          style={{
-                            height: durationHrs * rowHeight - 8,
-                            left: `calc(${i * widthPct}% + 2px)`,
-                            width: `calc(${widthPct}% - 4px)`,
-                          }}
-                        >
-                          <p className="font-semibold truncate">{s.name}</p>
-                          <p className="opacity-95 truncate text-[11px]">
-                            {s.room} · {toLabel(s.start)}–{toLabel(s.end)}
-                          </p>
-                        </Block>
-                      );
-                    })}
+                      {slotSubjects.map((s, i) => {
+                const startDec = toDecimal(s.start);
+                const durationHrs = toDecimal(s.end) - startDec;
+                const offset = (startDec - h) * rowHeight;
+                const count = slotSubjects.length;
+                const widthPct = 100 / count;
+                return (
+                  <Block
+                    key={s.id}
+                    onClick={onBlockClick ? () => onBlockClick(s) : undefined}
+                    className={`absolute rounded-md px-2 py-1.5 text-left z-10 overflow-hidden ${
+                      onBlockClick ? "hover:brightness-95 transition-all" : ""
+                    } ${colorByName[s.name]}`}
+                    style={{
+                      top: offset,
+                      height: durationHrs * rowHeight - 1,
+                      left: `calc(${i * widthPct}% + 2px)`,
+                      width: `calc(${widthPct}% - 4px)`,
+                    }}
+                  >
+                    <p className="text-sm font-bold leading-tight line-clamp-2">{s.name}</p>
+                    <p className="text-xs font-medium leading-tight mt-0.5">
+                      {s.room} · {toLabel(s.start)}–{toLabel(s.end)}
+                    </p>
+                  </Block>
+                );
+              })}
                   </div>
                 );
               })}
