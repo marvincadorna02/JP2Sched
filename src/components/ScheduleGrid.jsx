@@ -51,9 +51,9 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
 
           {HOURS.map((h) => (
             <Fragment key={h}>
-              <div className={TIME_CELL} style={{ height: rowHeight }}>
-                {toLabel(`${h}:00`)}
-              </div>
+              <div className="sticky left-0 z-20 bg-paper text-right pr-2 text-xs sm:text-sm font-semibold text-navy pt-1 h-6">
+                  <span className="relative -top-2 bg-paper px-0.5">{toLabel(`${END_HOUR}:00`)}</span>
+                </div>
               {DAYS.map((d) => {
                 const slotSubjects = subjects.filter(
                   (s) => s.day === d && Math.floor(toDecimal(s.start)) === h
