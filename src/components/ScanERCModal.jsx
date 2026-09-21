@@ -35,7 +35,8 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
   const [student, setStudent] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState(null);
-  const fileRef = useRef(null);
+  const cameraRef = useRef(null);
+  const galleryRef = useRef(null);
 
   if (!open) return null;
 
@@ -118,33 +119,52 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
           </div>
         )}
 
-        {step === "upload" && (
-          <div
-            className="border-2 border-dashed border-mist rounded-xl py-14 px-6 text-center hover:border-royal transition-colors cursor-pointer"
-            onClick={() => fileRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              handleFile(e.dataTransfer.files?.[0]);
-            }}
-          >
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => handleFile(e.target.files?.[0])}
-            />
-            <div className="w-12 h-12 rounded-full bg-mist flex items-center justify-center mx-auto mb-3">
-              <Camera size={22} className="text-royal" />
+                  {step === "upload" && (
+            <div
+              className="border-2 border-dashed border-mist rounded-xl py-10 px-6 text-center"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleFile(e.dataTransfer.files?.[0]);
+              }}
+            >
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+              <input
+                ref={galleryRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+              <div className="w-12 h-12 rounded-full bg-mist flex items-center justify-center mx-auto mb-3">
+                <Camera size={22} className="text-royal" />
+              </div>
+              <p className="text-sm font-medium text-navy mb-4">Take a photo or upload your ERC</p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  type="button"
+                  onClick={() => cameraRef.current?.click()}
+                  className="flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-navy"
+                >
+                  <Camera size={16} /> Take photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => galleryRef.current?.click()}
+                  className="flex items-center gap-2 rounded-lg border border-mist px-4 py-2.5 text-sm font-semibold text-navy"
+                >
+                  <Upload size={16} /> Upload
+                </button>
+              </div>
             </div>
-            <p className="text-sm font-medium text-navy">Tap to take a photo or upload</p>
-            <p className="text-xs text-navy/40 mt-1 flex items-center justify-center gap-1">
-              <Upload size={12} /> JPG or PNG, one clear shot of your schedule
-            </p>
-          </div>
-        )}
+          )}
 
         {step === "extracting" && (
           <div className="py-14 text-center">

@@ -22,18 +22,14 @@ export default function ScheduleGrid({ subjects, onBlockClick }) {
 [...new Set(subjects.map((s) => s.name))].sort().forEach((name, i) => {
   colorByName[name] = COLOR_CYCLE[i % COLOR_CYCLE.length];
 });
-  // Only clickable when a handler is passed (Overview); plain block otherwise (Schedule)
-  const Block = onBlockClick ? "button" : "div";
+  const Block = onBlockClick ? "button" : "div"
 
-  // Extend the grid past the default cutoff whenever a class runs later,
-  // so late-evening blocks (e.g. 6–8PM) don't get clipped at the bottom.
   const latestEnd = subjects.reduce((max, s) => Math.max(max, toDecimal(s.end)), DEFAULT_END_HOUR);
   const END_HOUR = Math.max(DEFAULT_END_HOUR, Math.ceil(latestEnd));
   const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
   return (
     <div className="isolate bg-paper rounded-2xl shadow-card overflow-hidden">
-      {/* Scrolls sideways on small screens; time column stays pinned */}
       <div className="overflow-x-auto">
         <div
           className="grid min-w-[720px]"
