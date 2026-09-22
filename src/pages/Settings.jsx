@@ -106,12 +106,33 @@ export default function Settings() {
   const termSubjects = useMemo(() => subjects.filter((s) => s.term === term), [subjects, term]);
 
   async function handleDeleteAll() {
+<<<<<<< HEAD
     if (!window.confirm(`Delete all ${termSubjects.length} class meetings in ${term}? This can't be undone.`))
       return;
     setBusy(true);
     await removeMany(termSubjects.map((s) => s.id));
     setBusy(false);
   }
+=======
+  if (!window.confirm(`Delete all ${termSubjects.length} class meetings in ${term}? This can't be undone.`))
+    return;
+  setBusy(true);
+  await removeMany(termSubjects.map((s) => s.id));
+  setBusy(false);
+}
+
+function handleEraseEverything() {
+  if (
+    !window.confirm(
+      "Erase EVERYTHING? This deletes your profile (name, course, year level, school ID), all semesters and all subjects. This can't be undone."
+    )
+  )
+    return;
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.replace("/");
+}
+>>>>>>> d77093f789902576769632879df52f3756f7427c
 
   async function handleImportFile(e) {
     const file = e.target.files?.[0];
@@ -198,6 +219,7 @@ export default function Settings() {
       </Section>
 
       <Section
+<<<<<<< HEAD
         danger
         title="Danger zone"
         description={`Remove every subject saved under ${term}. Other semesters are not affected.`}
@@ -207,6 +229,23 @@ export default function Settings() {
           {busy ? "Deleting…" : "Delete all subjects in this semester"}
         </button>
       </Section>
+=======
+          danger
+          title="Danger zone"
+          description={`Remove every subject saved under ${term}, or erase all data in this browser.`}
+        >
+          <div className="flex flex-wrap gap-3">
+            <button onClick={handleDeleteAll} disabled={busy || termSubjects.length === 0} className={btnDanger}>
+              <Trash2 size={16} strokeWidth={2.5} />
+              {busy ? "Deleting…" : "Delete all subjects in this semester"}
+            </button>
+            <button onClick={handleEraseEverything} className={btnDanger}>
+              <Trash2 size={16} strokeWidth={2.5} />
+              Erase everything
+            </button>
+          </div>
+        </Section>
+>>>>>>> d77093f789902576769632879df52f3756f7427c
     </AppShell>
   );
 }

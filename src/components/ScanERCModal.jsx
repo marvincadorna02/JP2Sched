@@ -28,6 +28,9 @@ async function fileToDownscaledBase64(file, maxDim = 1600, quality = 0.85) {
   return { base64: out.split(",")[1], mimeType: "image/jpeg" };
 }
 
+// Unique subjects (a subject can have several class meetings per week).
+const uniqueCount = (list) => new Set(list.map((r) => r.code || r.name)).size;
+
 export default function ScanERCModal({ open, onClose, onImport, subjects = [] }) {
   const [step, setStep] = useState("upload"); // upload -> extracting -> review
   const [imagePreview, setImagePreview] = useState(null);
@@ -35,7 +38,8 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
   const [student, setStudent] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState(null);
-  const fileRef = useRef(null);
+  const cameraRef = useRef(null);
+  const galleryRef = useRef(null);
 
   if (!open) return null;
 
@@ -96,6 +100,8 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
     handleClose();
   }
 
+  const subjectCount = uniqueCount(rows);
+
   return (
     <div className="fixed inset-0 bg-navy/50 flex items-center justify-center px-4 z-50">
       <div className="bg-paper rounded-2xl shadow-card w-full max-w-2xl p-6 max-h-[85vh] overflow-y-auto">
@@ -120,8 +126,7 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
 
         {step === "upload" && (
           <div
-            className="border-2 border-dashed border-mist rounded-xl py-14 px-6 text-center hover:border-royal transition-colors cursor-pointer"
-            onClick={() => fileRef.current?.click()}
+            className="border-2 border-dashed border-mist rounded-xl py-10 px-6 text-center"
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault();
@@ -129,20 +134,40 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
             }}
           >
             <input
-              ref={fileRef}
+              ref={cameraRef}
               type="file"
               accept="image/*"
               capture="environment"
               className="hidden"
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
+            <input
+              ref={galleryRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+            />
             <div className="w-12 h-12 rounded-full bg-mist flex items-center justify-center mx-auto mb-3">
               <Camera size={22} className="text-royal" />
             </div>
-            <p className="text-sm font-medium text-navy">Tap to take a photo or upload</p>
-            <p className="text-xs text-navy/40 mt-1 flex items-center justify-center gap-1">
-              <Upload size={12} /> JPG or PNG, one clear shot of your schedule
-            </p>
+            <p className="text-sm font-medium text-navy mb-4">Take a photo or upload your ERC</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => cameraRef.current?.click()}
+                className="flex items-center gap-2 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-navy"
+              >
+                <Camera size={16} /> Take photo
+              </button>
+              <button
+                type="button"
+                onClick={() => galleryRef.current?.click()}
+                className="flex items-center gap-2 rounded-lg border border-mist px-4 py-2.5 text-sm font-semibold text-navy"
+              >
+                <Upload size={16} /> Upload
+              </button>
+            </div>
           </div>
         )}
 
@@ -165,15 +190,13 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
           <div>
             <div className="flex items-center gap-2 mb-4 bg-mist/60 rounded-lg px-3.5 py-2.5 text-sm text-navy/70">
               <Check size={16} className="text-royal shrink-0" />
-              Found {rows.length} subjects. Check each one before saving — AI reads can miss a detail.
+              Found {subjectCount} subject{subjectCount === 1 ? "" : "s"} ({rows.length} class meetings).
+              Check each one before saving — AI reads can miss a detail.
             </div>
 
             <div className="space-y-2 mb-6">
               {rows.map((row) => (
-                <div
-                  key={row.id}
-                  className="border border-mist rounded-lg px-3.5 py-3"
-                >
+                <div key={row.id} className="border border-mist rounded-lg px-3.5 py-3">
                   {editingId === row.id ? (
                     <div className="grid grid-cols-2 gap-2.5">
                       <input
@@ -298,7 +321,7 @@ export default function ScanERCModal({ open, onClose, onImport, subjects = [] })
                 disabled={rows.length === 0}
                 className="flex-1 rounded-lg bg-gold py-2.5 text-sm font-semibold text-navy hover:bg-gold/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {`Save ${rows.length} subject${rows.length === 1 ? "" : "s"}`}
+                {`Save ${subjectCount} subject${subjectCount === 1 ? "" : "s"}`}
               </button>
             </div>
           </div>

@@ -2,3 +2,8 @@ node_modules
 .env
 dist
 .vercel
+<<<<<<< HEAD
+=======
+.env
+.env.local
+>>>>>>> d77093f789902576769632879df52f3756f7427c
