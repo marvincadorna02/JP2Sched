@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
+html, body, #root {
   min-height: 100%;
 }
 
