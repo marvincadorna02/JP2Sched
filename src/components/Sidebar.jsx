@@ -20,11 +20,11 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
         />
       )}
 
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-60 bg-navy flex flex-col transform transition-transform duration-200 md:static md:translate-x-0 md:shrink-0 md:min-h-screen ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+        <aside
+    className={`fixed inset-y-0 left-0 z-50 w-60 bg-navy flex flex-col transform transition-transform duration-200 md:static md:translate-x-0 md:shrink-0 md:min-h-screen ${
+      open ? "translate-x-0" : "-translate-x-full"
+    }`}
+        >
         <div className="px-6 py-7 flex items-center gap-2.5">
           <img src={logo} alt="JP2Sched" className="w-9 h-9 rounded-full" />
           <span className="font-display text-paper text-lg font-semibold flex-1">JP2Sched</span>

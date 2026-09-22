@@ -12,7 +12,7 @@ export default function AppShell({ children, modals }) {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="flex-1 min-w-0 overflow-y-auto scroll-thin">
-        <div className="md:hidden sticky top-0 z-40 flex items-center gap-3 bg-navy px-4 py-3">
+        <div className="md:hidden sticky top-0 z-20 flex items-center gap-3 bg-navy px-4 py-3">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
