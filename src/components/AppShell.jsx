@@ -8,19 +8,11 @@ export default function AppShell({ children, modals }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-<<<<<<< HEAD
-    <div className="flex h-screen bg-mist overflow-hidden">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      <main className="flex-1 min-w-0 overflow-y-auto scroll-thin">
-        <div className="md:hidden sticky top-0 z-20 flex items-center gap-3 bg-navy px-4 py-3">
-=======
     <div className="flex h-dvh bg-mist overflow-hidden">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="flex-1 min-w-0 overflow-y-auto scroll-thin">
         <div className="md:hidden sticky top-0 z-40 flex items-center gap-3 bg-navy px-4 py-3">
->>>>>>> d77093f789902576769632879df52f3756f7427c
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
